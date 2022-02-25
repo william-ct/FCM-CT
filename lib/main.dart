@@ -4,75 +4,28 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:clevertap_plugin/clevertap_plugin.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-const AndroidNotificationChannel notificationChannel =
-    AndroidNotificationChannel('fluttertest', 'FlutterTest',
-        importance: Importance.high, playSound: true);
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
+/// Handles background messages of FCM
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print('Handling a background message ${message.messageId}');
-  print(message.data);
-  print(message.data["wzrk_id"]);
-  print(message.data["nt"]);
-  print(message.data["nm"]);
-  print("_firebaseMessagingBackgroundHandler");
-  /*flutterLocalNotificationsPlugin.show(
-      message.data.hashCode,
-      message.data["nt"],
-      message.data["nm"],
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          notificationChannel.id,
-          notificationChannel.name,
-          importance: Importance.high,
-          playSound: true,
-          icon: '@mipmap/ic_launcher'
-        ),
-      ));*/
-
-
-  callCTPlugin();
   CleverTapPlugin.createNotification(jsonEncode(message.data));
 }
 
-Future<void> initFirebaseForeground() async {
+/// Handles foreground messages of FCM
+Future<void> _firebaseForegroundMessageHandler() async {
   await FirebaseMessaging.instance.getToken();
   FirebaseMessaging.onMessage.listen(receivedForegroundMessage);
 }
 
 void receivedForegroundMessage(RemoteMessage remoteMessage){
-  print("Inside receivedForegroundMessage");
-  callCTPlugin();
   CleverTapPlugin.createNotification(jsonEncode(remoteMessage.data));
 }
 
-void callCTPlugin() {
-  print("Inside callCTPlugin");
-  CleverTapPlugin _clevertapPlugin = CleverTapPlugin();
-  _clevertapPlugin.setCleverTapPushClickedPayloadReceivedHandler(pushClickedPayloadReceivedHandler);
-}
-
-void pushClickedPayloadReceivedHandler(Map<String, dynamic> map){
-  print("Inside pushClickedPayloadReceivedHandler");
-}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  /*await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(notificationChannel);*/
-
-
-
 
   runApp(const MyApp());
 }
@@ -104,16 +57,6 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -121,33 +64,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // late CleverTapPlugin _clevertapPlugin;
   int _counter = 0;
   String? token;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    /*var initialzationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/ic_launcher');
-    var initializationSettings =
-    InitializationSettings(android: initialzationSettingsAndroid);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);*/
 
-    initPlatformState();
-    // activateCleverTapFlutterPluginHandlers();
-    // callCTPlugin();
     CleverTapPlugin.setDebugLevel(3);
     CleverTapPlugin.createNotificationChannel(
         "fluttertest", "Flutter Test", "Flutter Test", 3, true);
@@ -157,81 +81,8 @@ class _MyHomePageState extends State<MyHomePage> {
         alert: true, badge: true, sound: true);
 
 
-    initFirebaseForeground();//Does the below function in this method.
-
-
-    /*FirebaseMessaging.onMessage.listen((RemoteMessage message)  async {
-      RemoteNotification? notification = message.notification;
-      *//*AndroidNotification? android = message.notification?.android;
-      // if (notification != null && android != null) {
-      print(notification.hashCode);
-      print(message.data["wzrk_id"]);*//*
-      print(message.data["nt"]);
-      print(message.data["nm"]);
-      print("Inside onMessage");
-      *//*flutterLocalNotificationsPlugin.show(
-            notification.hashCode,
-            message.data["nt"],
-            message.data["nm"],
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                notificationChannel.id,
-                notificationChannel.name,
-                color: Colors.blue,
-                importance: Importance.high,
-                playSound: true,
-                icon: '@mipmap/ic_launcher'
-              ),
-            ));*//*
-      // callCTPlugin();
-      *//*CleverTapPlugin _clevertapPlugin = CleverTapPlugin();
-      _clevertapPlugin.setCleverTapPushClickedPayloadReceivedHandler(
-          pushClickedPayloadReceived);*//*
-      callCTPlugin();
-      CleverTapPlugin.createNotification(jsonEncode(message.data));
-      // }
-    });
-*/
-
-
+    _firebaseForegroundMessageHandler();
     getToken();
-
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Inside onMessageOpenedApp");
-      // RemoteNotification? notification = message.notification;
-      // AndroidNotification? android = message.notification?.android;
-      // if (notification != null && android != null) {
-        /*showDialog(
-            context: context,
-            builder: (_) {
-              return AlertDialog(
-                title: Text(notification.title!),
-                content: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Text(notification.body!)],
-                  ),
-                ),
-              );
-            });*/
-        // activateCleverTapFlutterPluginHandlers();
-        callCTPlugin();
-        // CleverTapPlugin.createNotification(jsonEncode(message.data));
-      // }
-    });
-
-    FirebaseMessaging.instance
-        .getInitialMessage()
-        .then((RemoteMessage? message) {
-            print("Inside getInitialMessage()");
-            // callCTPlugin();
-            if (message != null) {
-              print("Inside getInitialMessage()");
-            }
-    });
-
-
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -239,48 +90,9 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!mounted) return;
   }
 
- /* void activateCleverTapFlutterPluginHandlers(){
-    print("Inside activateCleverTapFlutterPluginHandlers");
-    _clevertapPlugin = CleverTapPlugin();
-    _clevertapPlugin.setCleverTapPushClickedPayloadReceivedHandler(
-        pushClickedPayloadReceived);
-  }*/
-
-  void pushClickedPayloadReceived(Map<String, dynamic> map) {
-    print("Inside pushClickedPayloadReceived called");
-    setState(() async {
-      var data = jsonEncode(map);
-      print("on Push Click Payload = " + data.toString());
-    });
-  }
-
-  /*void callCTPlugin1(){
-    print("Inside callCTPlugin1");
-    CleverTapPlugin _clevertapPlugin1 = CleverTapPlugin();
-    _clevertapPlugin1.setCleverTapPushClickedPayloadReceivedHandler(pushClickedPayloadReceivedForegroundHandler);
-  }*/
-  /*void pushClickedPayloadReceivedForegroundHandler(Map<String, dynamic> map){
-    print("Inside pushClickedPayloadReceivedForegroundHandler");
-    setState(() async {
-          var data = jsonEncode(map);
-          print("on Push Click Payload = " + data.toString());
-    });
-  }*/
 
   void showNotification() {
-    setState(() {
-      _counter++;
-    });
-    /*flutterLocalNotificationsPlugin.show(
-        0,
-        "Testing Local Notification$_counter",
-        "How you doin ?",
-        NotificationDetails(
-            android: AndroidNotificationDetails(notificationChannel.id, notificationChannel.name,
-                importance: Importance.high,
-                color: Colors.blue,
-                playSound: true,
-                icon: '@mipmap/ic_launcher')));*/
+    //Does nothing
   }
 
   getToken() async {
