@@ -66,11 +66,18 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   String? token;
+  late CleverTapPlugin _clevertapPlugin;
 
 
   @override
   void initState() {
     super.initState();
+    initPlatformState();
+    _clevertapPlugin = new CleverTapPlugin();
+
+    _clevertapPlugin.setCleverTapInAppNotificationButtonClickedHandler(
+        inAppNotificationButtonClicked);
+
 
     CleverTapPlugin.setDebugLevel(3);
     CleverTapPlugin.createNotificationChannel(
@@ -84,15 +91,44 @@ class _MyHomePageState extends State<MyHomePage> {
     _firebaseForegroundMessageHandler();
     getToken();
   }
-
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
     if (!mounted) return;
   }
 
+  void inAppNotificationDismissed(Map<String, dynamic> map) {
+    this.setState(() {
+      print("inAppNotificationDismissed called");
+    });
+  }
+
+  void inAppNotificationButtonClicked(Map<String, dynamic>? map) {
+    this.setState(() {
+      print("inAppNotificationButtonClicked called = ${map.toString()}");
+    });
+  }
+
+
 
   void showNotification() {
-    //Does nothing
+    var item1 = {
+      // Key:    Value
+      'name': 'thing1',
+      'amount': '100'
+    };
+    var item2 = {
+      // Key:    Value
+      'name': 'thing2',
+      'amount': '100'
+    };
+    var items = [item1, item2];
+    var chargeDetails = {
+      // Key:    Value
+      'total': '200',
+      'payment': 'cash'
+    };
+    CleverTapPlugin.recordChargedEvent(chargeDetails, items);
+    // showToast("Raised event - Charged");
   }
 
   getToken() async {

@@ -43,14 +43,14 @@
            android:name="CLEVERTAP_TOKEN"
            android:value="TEST-ab4-256"/>
 
-       <!--<service
+       <service
            android:name="com.clevertap.android.sdk.pushnotification.fcm.FcmMessageListenerService"
            android:exported="true"
            tools:ignore="Instantiatable">
            <intent-filter>
                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
            </intent-filter>
-       </service>-->
+       </service>
        <service
            android:name="com.clevertap.android.sdk.pushnotification.CTNotificationIntentService"
            android:exported="false">
